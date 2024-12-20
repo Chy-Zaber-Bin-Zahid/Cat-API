@@ -30,7 +30,13 @@
       </a>
     </nav>
     <div class="image-container">
-      <img src="{{index .Images 0}}" alt="Cat image" class="pet-image">
+      {{if .Loading}}
+        <div id="loading">Loading...</div>
+      {{else}}
+        <div id="cat-images">
+          <img src="{{index .Images 0}}" alt="Cat image" class="pet-image">
+        </div>
+      {{end}}
     </div>
     <div class="actions">
       <button class="like-btn">
