@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pet Social</title>
-  <link rel="stylesheet" href="../static/css/style.css"/>
+  <link rel="stylesheet" href="../static/css/styless.css"/>
 </head>
 <body>
   
@@ -86,18 +86,33 @@
       </nav>
       <div class="breeds-content">
         <select class="breed-select">
-          <option value="">Please select</option>
-          <option value="abyssinian">Abyssinian</option>
+            <option value="">Please select</option>
+            <option value="abyssinian" selected>Abyssinian</option>
+            <option value="bengal">Bengal</option>
+            <option value="siamese">Siamese</option>
         </select>
         <div class="breed-info">
-          <img src="placeholder.jpg" alt="Breed image" class="breed-image">
-          <div class="breed-details">
-            <h2>Abyssinian <span>(Egypt)</span></h2>
-            <p>The Abyssinian is easy to care for, and a joy to have in your home. They're affectionate cats and love both people and other animals.</p>
-            <a href="#" class="wiki-link">WIKIPEDIA</a>
-          </div>
+            <div class="carousel-container">
+                <div class="carousel-slide">
+                    <img src="/placeholder.svg?height=500&width=800" alt="Abyssinian cat">
+                </div>
+                <div class="carousel-dots">
+                    <div class="dot active"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="breed-details">
+                <h2>Abyssinian <span>(Egypt)</span></h2>
+                <p>The Abyssinian is easy to care for, and a joy to have in your home. They're affectionate cats and love both people and other animals.</p>
+                <a href="#" class="wiki-link">WIKIPEDIA</a>
+            </div>
         </div>
-      </div>
     </div>
 
   <script src="/static/js/script.js"></script>
