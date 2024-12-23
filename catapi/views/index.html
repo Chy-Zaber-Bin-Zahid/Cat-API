@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pet Social</title>
-  <link rel="stylesheet" href="/static/css/global.css">
+  <link rel="stylesheet" href="../static/css/style.css"/>
 </head>
 <body>
   <div class="card">
@@ -30,12 +30,13 @@
       </a>
     </nav>
     <div class="image-container">
-      {{if .Loading}}
-        <div id="loading">Loading...</div>
-      {{else}}
+      <div class="loading-spinner"><p>Loading Cat Image...</p></div>
+      {{if .CatImageURL}}
         <div id="cat-images">
-          <img src="{{index .Images 0}}" alt="Cat image" class="pet-image">
+          <img src="{{.CatImageURL}}" alt="Cat image" class="pet-image">
         </div>
+      {{else}}
+          <p>No image available.</p>
       {{end}}
     </div>
     <div class="actions">
@@ -59,6 +60,6 @@
     </div>
   </div>
 
-  <script src="/static/js/logic.js"></script>
+  <script src="/static/js/script.js"></script>
 </body>
 </html>

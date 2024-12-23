@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sync"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
@@ -14,124 +13,63 @@ type MainController struct {
 	beego.Controller
 }
 
+// Struct to parse the JSON response from the API
 type CatImage struct {
 	URL string `json:"url"`
 }
 
 func (c *MainController) Get() {
-	// Check if the request expects a JSON response
-	acceptHeader := c.Ctx.Request.Header.Get("Accept")
-	if acceptHeader == "application/json" {
-		// Return JSON response with images
-		apiURL := "https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=beng&api_key=live_Ii20w7Wt785t9kCsxDQYAMTIIL7epsK1IaGiHL3hxWw0ou2AfkvZ3FAMxJ4NEc0Z"
-		ch := make(chan []string)
+	// Channel to get the image URL
+	imageChan := make(chan string)
 
-		var wg sync.WaitGroup
-		wg.Add(1)
+	// Start the goroutine to fetch the image URL from the external API
+	go func() {
+		// Format the API URL with the key
+		apiURL := "https://api.thecatapi.com/v1/images/search"
 
-		// Fetching images concurrently
-		go func() {
-			defer wg.Done()
-			response, err := http.Get(apiURL)
-			if err != nil {
-				fmt.Println("Error fetching data:", err)
-				ch <- nil
-				return
-			}
-			defer response.Body.Close()
+		// Make the HTTP request
+		resp, err := http.Get(apiURL)
+		if err != nil {
+			// If there's an error with the HTTP request
+			fmt.Println("Error fetching cat image:", err)
+			imageChan <- ""
+			return
+		}
+		defer resp.Body.Close()
 
-			body, err := ioutil.ReadAll(response.Body)
-			if err != nil {
-				fmt.Println("Error reading response:", err)
-				ch <- nil
-				return
-			}
-
-			var images []CatImage
-			if err := json.Unmarshal(body, &images); err != nil {
-				fmt.Println("Error unmarshalling JSON:", err)
-				ch <- nil
-				return
-			}
-
-			var imageURLs []string
-			for _, img := range images {
-				imageURLs = append(imageURLs, img.URL)
-			}
-			ch <- imageURLs
-		}()
-
-		go func() {
-			wg.Wait()
-			close(ch)
-		}()
-
-		// Receiving image URLs
-		imageURLs := <-ch
-		if imageURLs == nil {
-			imageURLs = []string{"https://placekitten.com/500/300"} // Fallback image
+		// Read the response body
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			// If there's an error reading the response body
+			fmt.Println("Error reading response body:", err)
+			imageChan <- ""
+			return
 		}
 
-		// Send the image URLs as JSON response
-		c.Ctx.Output.SetStatus(200)
-		c.Ctx.Output.Header("Content-Type", "application/json")
-		c.Ctx.Output.JSON(map[string]interface{}{
-			"images": imageURLs,
-		}, false, false)
+		// Unmarshal the JSON response
+		var catImages []CatImage
+		err = json.Unmarshal(body, &catImages)
+		if err != nil || len(catImages) == 0 {
+			// If the JSON parsing fails or the array is empty
+			fmt.Println("Error parsing JSON:", err)
+			imageChan <- ""
+			return
+		}
 
+		// Send the URL of the first image to the channel
+		imageChan <- catImages[0].URL
+	}()
+
+	// Fetch the image URL from the channel
+	catImageURL := <-imageChan
+	if catImageURL == "" {
+		// If the image URL is empty (i.e., an error occurred)
+		c.Data["CatImageURL"] = "Error fetching image"
 	} else {
-		// Default behavior for the initial page load (HTML render)
-		apiURL := "https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=beng&api_key=live_Ii20w7Wt785t9kCsxDQYAMTIIL7epsK1IaGiHL3hxWw0ou2AfkvZ3FAMxJ4NEc0Z"
-		ch := make(chan []string)
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-
-		// Fetching images concurrently
-		go func() {
-			defer wg.Done()
-			response, err := http.Get(apiURL)
-			if err != nil {
-				fmt.Println("Error fetching data:", err)
-				ch <- nil
-				return
-			}
-			defer response.Body.Close()
-
-			body, err := ioutil.ReadAll(response.Body)
-			if err != nil {
-				fmt.Println("Error reading response:", err)
-				ch <- nil
-				return
-			}
-
-			var images []CatImage
-			if err := json.Unmarshal(body, &images); err != nil {
-				fmt.Println("Error unmarshalling JSON:", err)
-				ch <- nil
-				return
-			}
-
-			var imageURLs []string
-			for _, img := range images {
-				imageURLs = append(imageURLs, img.URL)
-			}
-			ch <- imageURLs
-		}()
-
-		go func() {
-			wg.Wait()
-			close(ch)
-		}()
-
-		// Receiving image URLs
-		imageURLs := <-ch
-		if imageURLs == nil {
-			imageURLs = []string{"https://placekitten.com/500/300"} // Fallback image
-		}
-
-		// Pass data to template
-		c.Data["Images"] = imageURLs
-		c.TplName = "index.html"
+		// Otherwise, assign the image URL to the template data
+		c.Data["CatImageURL"] = catImageURL
 	}
+
+	// Render the HTML template with the image URL
+	c.TplName = "index.html"
 }
