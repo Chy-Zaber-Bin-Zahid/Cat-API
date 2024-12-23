@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pet Social</title>
-  <link rel="stylesheet" href="../static/css/styl.css"/>
+  <link rel="stylesheet" href="../static/css/style.css"/>
 </head>
 <body>
     <div class="background-div"></div>
@@ -31,7 +31,7 @@
         </a>
       </nav>
       <div class="image-container">
-        <div class="loading-spinner"><p>Loading Cat Image...</p></div>
+        <div class="loading-spinner"><img class="pulse" src="../static//img/loadingCat.svg" alt="Loading Cat"></div>
         {{if .CatImageURL}}
           <div id="cat-images">
             <img src="{{.CatImageURL}}" alt="Cat image" class="pet-image">
@@ -85,34 +85,38 @@
         </a>
       </nav>
       <div class="breeds-content">
-        <select class="breed-select">
-            <option value="">Please select</option>
-            <option value="abyssinian" selected>Abyssinian</option>
-            <option value="bengal">Bengal</option>
-            <option value="siamese">Siamese</option>
+        <!-- Dropdown for selecting breed -->
+        <select class="breed-select" id="breedSelect" onchange="updateBreedDetails()">
+            {{range .Breeds}}
+                <option value="{{.ID}}">{{.Name}}</option>
+            {{end}}
         </select>
+    
         <div class="breed-info">
             <div class="carousel-container">
                 <div class="carousel-slide">
-                    <img src="/placeholder.svg?height=500&width=800" alt="Abyssinian cat">
+                    <!-- Show the first breed image in the carousel -->
+                    <img id="breedImage" src="{{if .Breeds}}{{index .Breeds 0}}.Image.URL{{end}}" alt="Breed Image" />
                 </div>
-                <div class="carousel-dots">
-                    <div class="dot active"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </div>
+                <!-- <div class="carousel-dots">
+                    {{range .Breeds}}
+                        <div class="dot"></div>
+                    {{end}}
+                </div> -->
             </div>
+    
             <div class="breed-details">
-                <h2>Abyssinian <span>(Egypt)</span></h2>
-                <p>The Abyssinian is easy to care for, and a joy to have in your home. They're affectionate cats and love both people and other animals.</p>
-                <a href="#" class="wiki-link">WIKIPEDIA</a>
+                <!-- Display details of the selected breed -->
+                <h2 id="breedName"> <span id="breedOrigin"></span></h2>
+                <p id="breedDesc">
+                  {{if .Breeds}}
+                    {{.Desc}}
+                  {{end}}
+                </p>
+                <a href="#" class="wiki-link" id="wikiLink">WIKIPEDIA</a>
             </div>
         </div>
+      </div>
     </div>
 
   <script src="/static/js/script.js"></script>
