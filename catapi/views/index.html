@@ -7,58 +7,98 @@
   <link rel="stylesheet" href="../static/css/style.css"/>
 </head>
 <body>
-  <div class="card">
-    <nav class="nav">
-      <a href="#" class="nav-item active" id="vote-nav">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 10l5-5 5 5M7 14l5 5 5-5"/>
-        </svg>
-        Voting
-      </a>
-      <a href="#" class="nav-item" id="breeds-nav">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        Breeds
-      </a>
-      <a href="#" class="nav-item" id="favs-nav">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-        </svg>
-        Favs
-      </a>
-    </nav>
-    <div class="image-container">
-      <div class="loading-spinner"><p>Loading Cat Image...</p></div>
-      {{if .CatImageURL}}
-        <div id="cat-images">
-          <img src="{{.CatImageURL}}" alt="Cat image" class="pet-image">
+  
+    <div class="card" id="voting-view">
+      <nav class="nav">
+        <a href="#" class="nav-item active" data-view="voting">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 10l5-5 5 5M7 14l5 5 5-5"/>
+          </svg>
+          Voting
+        </a>
+        <a href="#" class="nav-item" data-view="breeds">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Breeds
+        </a>
+        <a href="#" class="nav-item" data-view="favs">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          Favs
+        </a>
+      </nav>
+      <div class="image-container">
+        <div class="loading-spinner"><p>Loading Cat Image...</p></div>
+        {{if .CatImageURL}}
+          <div id="cat-images">
+            <img src="{{.CatImageURL}}" alt="Cat image" class="pet-image">
+          </div>
+        {{else}}
+            <p>No image available.</p>
+        {{end}}
+      </div>
+      <div class="actions">
+        <button class="like-btn">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
+        <div class="vote-container">
+          <button class="vote-btn up">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+            </svg>
+          </button>
+          <button class="vote-btn down">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+            </svg>
+          </button>
         </div>
-      {{else}}
-          <p>No image available.</p>
-      {{end}}
-    </div>
-    <div class="actions">
-      <button class="like-btn">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-        </svg>
-      </button>
-      <div class="vote-container">
-        <button class="vote-btn up">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
-          </svg>
-        </button>
-        <button class="vote-btn down">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
-          </svg>
-        </button>
       </div>
     </div>
-  </div>
+
+    <!-- Breeds View -->
+    <div class="card hidden" id="breeds-view">
+      <nav class="nav">
+        <a href="#" class="nav-item" data-view="voting">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 10l5-5 5 5M7 14l5 5 5-5"/>
+          </svg>
+          Voting
+        </a>
+        <a href="#" class="nav-item active" data-view="breeds">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Breeds
+        </a>
+        <a href="#" class="nav-item" data-view="favs">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          Favs
+        </a>
+      </nav>
+      <div class="breeds-content">
+        <select class="breed-select">
+          <option value="">Please select</option>
+          <option value="abyssinian">Abyssinian</option>
+        </select>
+        <div class="breed-info">
+          <img src="placeholder.jpg" alt="Breed image" class="breed-image">
+          <div class="breed-details">
+            <h2>Abyssinian <span>(Egypt)</span></h2>
+            <p>The Abyssinian is easy to care for, and a joy to have in your home. They're affectionate cats and love both people and other animals.</p>
+            <a href="#" class="wiki-link">WIKIPEDIA</a>
+          </div>
+        </div>
+      </div>
+    </div>
 
   <script src="/static/js/script.js"></script>
 </body>

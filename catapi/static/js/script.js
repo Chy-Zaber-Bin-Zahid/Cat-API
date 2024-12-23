@@ -1,52 +1,77 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const upVoteBtn = document.querySelector(".vote-btn.up");
-    const downVoteBtn = document.querySelector(".vote-btn.down");
-    const catImagesDiv = document.getElementById("cat-images");
-    const loading = document.querySelector(".loading-spinner");
-  
-    // Function to fetch a new cat image from the server
-    function fetchCatImage() {
-      fetch("/")  // Send a GET request to the root URL to get a new image
-        .then(response => response.text())  // Get the HTML response
-        .then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html");
-          const newImageURL = doc.querySelector("#cat-images img")?.src;
-  
-          if (newImageURL) {
-            // Update the image source with the new URL
-            const newImageElement = document.createElement("img");
-            newImageElement.src = newImageURL;
-            newImageElement.alt = "New Cat Image";
-            newImageElement.classList.add("pet-image");
-  
-            // Replace the old image with the new one
-            catImagesDiv.innerHTML = "";  // Clear the current image
-            catImagesDiv.appendChild(newImageElement);  // Add the new image
-            catImagesDiv.style.display = "block"
-            loading.style.display = "none"
-          } else {
-            console.log("No image URL found.");
-          }
-        })
-        .catch(error => {
-          console.error("Error fetching new cat image:", error);
-        });
-    }
-  
-    // Attach event listeners to the vote buttons
-    upVoteBtn.addEventListener("click", function () {
-      console.log("Up vote clicked");
-      catImagesDiv.style.display = "none"
-      loading.style.display = "block"
-      fetchCatImage();
-    });
-  
-    downVoteBtn.addEventListener("click", function () {
-      console.log("Down vote clicked");
-      catImagesDiv.style.display = "none"
-      loading.style.display = "block"
-      fetchCatImage();
+  // Get DOM elements
+  const upVoteBtn = document.querySelector(".vote-btn.up");
+  const downVoteBtn = document.querySelector(".vote-btn.down");
+  const catImagesDiv = document.getElementById("cat-images");
+  const loading = document.querySelector(".loading-spinner");
+  const navItems = document.querySelectorAll('.nav-item');
+  const votingView = document.getElementById('voting-view');
+  const breedsView = document.getElementById('breeds-view');
+
+  // Initially hide breeds view
+  breedsView.style.display = 'none';
+  votingView.style.display = 'block';
+
+  // Handle navigation
+  navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const viewName = item.dataset.view;
+      
+      // Remove active class from all nav items
+      navItems.forEach(nav => nav.classList.remove('active'));
+      
+      // Add active class to clicked nav items in both views
+      document.querySelectorAll(`[data-view="${viewName}"]`)
+        .forEach(nav => nav.classList.add('active'));
+      
+      // Show/hide views based on selection
+      if (viewName === 'voting') {
+        votingView.style.display = 'block';
+        breedsView.style.display = 'none';
+      } else if (viewName === 'breeds') {
+        votingView.style.display = 'none';
+        breedsView.style.display = 'block';
+      }
     });
   });
-  
+
+  // Function to fetch new cat image
+  async function fetchCatImage() {
+    try {
+      loading.style.display = "block";
+      catImagesDiv.style.display = "none";
+      
+      const response = await fetch("/");
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const newImageURL = doc.querySelector("#cat-images img")?.src;
+
+      if (newImageURL) {
+        const newImageElement = document.createElement("img");
+        newImageElement.src = newImageURL;
+        newImageElement.alt = "Cat image";
+        newImageElement.classList.add("pet-image");
+
+        catImagesDiv.innerHTML = "";
+        catImagesDiv.appendChild(newImageElement);
+        catImagesDiv.style.display = "block";
+        loading.style.display = "none";
+      } else {
+        throw new Error("No image URL found");
+      }
+    } catch (error) {
+      console.error("Error fetching new cat image:", error);
+      loading.innerHTML = "<p>Error loading image. Please try again.</p>";
+    }
+  }
+
+  // Handle voting buttons
+  function handleVote() {
+    fetchCatImage();
+  }
+
+  upVoteBtn?.addEventListener("click", handleVote);
+  downVoteBtn?.addEventListener("click", handleVote);
+});
