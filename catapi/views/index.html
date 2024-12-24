@@ -96,7 +96,7 @@
             <div class="carousel-container">
                 <div class="carousel-slide">
                     <!-- Show the first breed image in the carousel -->
-                    <img id="breedImage" src="{{if .Breeds}}{{index .Breeds 0}}.Image.URL{{end}}" alt="Breed Image" />
+                    <!-- <img id="breedImage" src="{{if .Breeds}}{{index .Breeds 0}}.Image.URL{{end}}" alt="Breed Image" /> -->
                 </div>
                 <!-- <div class="carousel-dots">
                     {{range .Breeds}}
@@ -107,13 +107,9 @@
     
             <div class="breed-details">
                 <!-- Display details of the selected breed -->
-                <h2 id="breedName"> <span id="breedOrigin"></span></h2>
-                <p id="breedDesc">
-                  {{if .Breeds}}
-                    {{.Desc}}
-                  {{end}}
-                </p>
-                <a href="#" class="wiki-link" id="wikiLink">WIKIPEDIA</a>
+                <h2 id="breedName">{{.Name}} <span id="breedOrigin">({{.Origin}})</span></h2>
+                <p id="breedDesc">{{.Desc}}</p>
+                <a href="{{.Wiki}}" class="wiki-link" id="wikiLink">WIKIPEDIA</a>
             </div>
         </div>
       </div>

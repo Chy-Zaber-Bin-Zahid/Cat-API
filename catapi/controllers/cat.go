@@ -15,9 +15,7 @@ type Breed struct {
 	Name   string `json:"name"`
 	Origin string `json:"origin"`
 	Desc   string `json:"description"`
-	Image  struct {
-		URL string `json:"url"`
-	} `json:"image"`
+	Wiki   string `json:"wikipedia_url"`
 }
 
 // Struct to parse the cat image data
@@ -110,6 +108,11 @@ func (c *MainController) Get() {
 	} else {
 		// Otherwise, assign the breed data to the template data
 		c.Data["Breeds"] = breeds
+		c.Data["Name"] = breeds[0].Name
+		c.Data["Desc"] = breeds[0].Desc
+		c.Data["Origin"] = breeds[0].Origin
+		c.Data["Wiki"] = breeds[0].Wiki
+		fmt.Println(c.Data["Name"])
 	}
 
 	// Handle the image URL
