@@ -10,6 +10,64 @@ document.addEventListener("DOMContentLoaded", function () {
   const favsView = document.getElementById('favs-view');
   const viewToggles = document.querySelectorAll('.view-toggle');
 
+//   document.addEventListener('DOMContentLoaded', function() {
+//     // Set the default breed ID (you can set this to whatever you want)
+//     var defaultBreedId = 'acur';  // Example breed ID, you can change it to a valid ID
+//     console.log("Selected Breed ID:", defaultBreedId);
+//     // Set the default value in the dropdown
+//     var breedSelect = document.getElementById('breedSelect');
+//     breedSelect.value = defaultBreedId;
+
+//     // Trigger the change event manually to load images for the default breed
+//     breedSelect.dispatchEvent(new Event('change'));
+// });
+
+// Define the function with a name
+async function loadBreedImages() {
+  const selectedId = document.getElementById('breedSelect').value; // Get the selected option's value (ID)
+  console.log("Id: ", selectedId);
+
+  try {
+      const response = await fetch(`/catImages?breed_id=${selectedId}`, {
+          method: 'GET',
+      });
+
+      if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const images = await response.json();
+
+      // Get the carousel container
+      const carouselContainer = document.querySelector('.carousel-slide');
+      carouselContainer.innerHTML = ''; // Clear existing content
+
+      // Loop through the images and add them to the carousel
+      images.forEach(image => {
+          const imgElement = document.createElement('img');
+          const dotElement = document.createElement('div');
+          imgElement.src = image.url;
+          imgElement.alt = "Breed Image";
+          imgElement.className = "carousel-image"; // Optional: Add a class for styling
+          dotElement.className = "dot"
+
+          carouselContainer.appendChild(imgElement);
+          document.querySelector('.carousel-dots').appendChild(dotElement)
+      });
+
+      console.log("Images loaded successfully!");
+  } catch (error) {
+      console.error('Error fetching data:', error);
+  }
+}
+
+// Add the event listener
+document.getElementById('breedSelect').addEventListener('change', loadBreedImages);
+
+
+
+
+
   // Initially hide breeds view
   breedsView.style.display = 'none';
   favsView.style.display = 'none';
@@ -46,6 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
         votingView.style.display = 'none';
         breedsView.style.display = 'block';
         favsView.style.display = 'none';
+        loadBreedImages()
       } else {
         votingView.style.display = 'none';
         breedsView.style.display = 'none';

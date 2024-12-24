@@ -108,11 +108,11 @@ func (c *MainController) Get() {
 	} else {
 		// Otherwise, assign the breed data to the template data
 		c.Data["Breeds"] = breeds
+		c.Data["Name"] = breeds[0].ID
 		c.Data["Name"] = breeds[0].Name
 		c.Data["Desc"] = breeds[0].Desc
 		c.Data["Origin"] = breeds[0].Origin
 		c.Data["Wiki"] = breeds[0].Wiki
-		fmt.Println(c.Data["Name"])
 	}
 
 	// Handle the image URL
@@ -126,4 +126,64 @@ func (c *MainController) Get() {
 
 	// Render the HTML template with the image and breed data
 	c.TplName = "index.html"
+}
+
+func (c *MainController) FetchCatImages() {
+	// Retrieve breed_id from query parameters
+	breedID := c.GetString("breed_id")
+	if breedID == "" {
+		breedID = "abys"
+	}
+	fmt.Println("Id:", breedID)
+
+	// Create search URL with limit=8
+	url := fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=8", breedID)
+
+	// Create the HTTP request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		c.Data["json"] = map[string]interface{}{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		c.Data["json"] = map[string]interface{}{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		c.Data["json"] = map[string]interface{}{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	// Define a struct for parsing the image data
+	var images []struct {
+		URL string `json:"url"`
+	}
+
+	// Unmarshal the JSON response into the images struct
+	err = json.Unmarshal(body, &images)
+	if err != nil {
+		c.Data["json"] = map[string]interface{}{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	// Return the images as JSON response
+	if len(images) > 0 {
+		c.Data["json"] = images
+	} else {
+		c.Data["json"] = map[string]interface{}{
+			"error": "No images found for the selected breed",
+		}
+	}
+	c.ServeJSON()
 }
