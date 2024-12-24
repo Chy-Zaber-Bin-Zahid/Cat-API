@@ -7,11 +7,23 @@ document.addEventListener("DOMContentLoaded", function () {
   const navItems = document.querySelectorAll('.nav-item');
   const votingView = document.getElementById('voting-view');
   const breedsView = document.getElementById('breeds-view');
+  const favsView = document.getElementById('favs-view');
+  const viewToggles = document.querySelectorAll('.view-toggle');
 
   // Initially hide breeds view
   breedsView.style.display = 'none';
+  favsView.style.display = 'none';
   votingView.style.display = 'block';
 
+  viewToggles.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const viewClicked = item.dataset.view;
+      viewToggles.forEach(nav => nav.classList.remove('active'));
+      document.querySelectorAll(`[data-view="${viewClicked}"]`)
+        .forEach(nav => nav.classList.add('active'));
+      });
+    });
   // Handle navigation
   navItems.forEach(item => {
     item.addEventListener('click', (e) => {
@@ -29,9 +41,15 @@ document.addEventListener("DOMContentLoaded", function () {
       if (viewName === 'voting') {
         votingView.style.display = 'block';
         breedsView.style.display = 'none';
+        favsView.style.display = 'none';
       } else if (viewName === 'breeds') {
         votingView.style.display = 'none';
         breedsView.style.display = 'block';
+        favsView.style.display = 'none';
+      } else {
+        votingView.style.display = 'none';
+        breedsView.style.display = 'none';
+        favsView.style.display = 'block';
       }
     });
   });

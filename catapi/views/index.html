@@ -114,7 +114,50 @@
         </div>
       </div>
     </div>
+    <div id="favs-view" class="card hidden">
+      <nav class="nav">
+        <a href="#" class="nav-item" data-view="voting">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 10l5-5 5 5M7 14l5 5 5-5"/>
+          </svg>
+          Voting
+        </a>
+        <a href="#" class="nav-item active" data-view="breeds">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          Breeds
+        </a>
+        <a href="#" class="nav-item" data-view="favs">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          Favs
+        </a>
+      </nav>
+      <div class="view-toggles">
+        <button class="view-toggle grid active" data-view="grid">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+        </button>
+        <button class="view-toggle list" data-view="list">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="favs-grid">
+        <!-- Favorite items will be dynamically added here -->
+      </div>
+    </div>
 
-  <script src="/static/js/script.js"></script>
+  <script src="/static/js/scripts.js"></script>
 </body>
 </html>
