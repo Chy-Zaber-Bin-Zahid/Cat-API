@@ -148,7 +148,7 @@ body {
 .breed-image {
     width: 100%;
     height: 300px;
-    object-fit: contain;
+    object-fit: cover;
     border-radius: 20px;
 }
 
@@ -203,7 +203,7 @@ body {
     width: 100%; /* Ensures each image takes the full width of the carousel */
     height: 300px;
     flex-shrink: 0; /* Prevent images from shrinking */
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .carousel-dots {
@@ -254,16 +254,17 @@ body {
 
 .view-toggles {
     display: flex;
-    justify-content: flex-end;
-    padding: 10px;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
   }
   
   .view-toggle {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 5px;
-    margin-left: 10px;
+    padding: 6px;
+    padding-bottom: 3px;
   }
   
   .view-toggle.active {
@@ -274,30 +275,26 @@ body {
   .favs-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 10px;
+    gap: 5px;
+    height: 500px;
+    overflow-y: auto;
   }
   
   .favs-grid.list-view {
     grid-template-columns: 1fr;
   }
+
   
-  .fav-item {
-    position: relative;
-    aspect-ratio: 1;
-    overflow: hidden;
-    border-radius: 5px;
-  }
-  
-  .fav-item img {
+  .fav-image {
     width: 100%;
-    height: 100%;
+    height: 200px;
     object-fit: cover;
   }
-  
-  .favs-grid.list-view .fav-item {
-    aspect-ratio: 16/9;
+
+  .list-view .fav-image {
+    height: 300px;
   }
+  
 
 @media (max-width: 768px) {
     .breed-info {

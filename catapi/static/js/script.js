@@ -10,21 +10,49 @@ document.addEventListener("DOMContentLoaded", function () {
   const favsView = document.getElementById('favs-view');
   const likeButton = document.querySelector('.like-btn');
   const viewToggles = document.querySelectorAll('.view-toggle');
-  const imageID = "your-image-id";
-
-//   document.addEventListener('DOMContentLoaded', function() {
-//     // Set the default breed ID (you can set this to whatever you want)
-//     var defaultBreedId = 'acur';  // Example breed ID, you can change it to a valid ID
-//     console.log("Selected Breed ID:", defaultBreedId);
-//     // Set the default value in the dropdown
-//     var breedSelect = document.getElementById('breedSelect');
-//     breedSelect.value = defaultBreedId;
-
-//     // Trigger the change event manually to load images for the default breed
-//     breedSelect.dispatchEvent(new Event('change'));
-// });
 
 // Define the function with a name
+async function getFavourites() {
+  const apiKey = 'live_Ii20w7Wt785t9kCsxDQYAMTIIL7epsK1IaGiHL3hxWw0ou2AfkvZ3FAMxJ4NEc0Z'; // Replace with your actual API key
+
+  try {
+      // Send GET request to TheCatAPI to fetch favourites
+      const response = await fetch('https://api.thecatapi.com/v1/favourites', {
+          method: 'GET',
+          headers: {
+              'x-api-key': apiKey // Send API key in the header
+          }
+      });
+
+      if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Get the container where we want to display the favourite images
+      const favsGrid = document.querySelector('.favs-grid');
+      favsGrid.innerHTML = ''; // Clear existing content
+
+      // Loop through the favourites and create image elements
+      data.forEach(fav => {
+          const imgElement = document.createElement('img');
+          imgElement.src = fav.image.url;
+          imgElement.alt = 'Favourite cat image';
+          imgElement.className = 'fav-image'; // You can style the images with this class
+
+          // Append the image to the favs-grid container
+          favsGrid.appendChild(imgElement);
+      });
+
+      console.log("Favourites loaded successfully!");
+
+  } catch (error) {
+      console.error('Error fetching favourites:', error);
+  }
+}
+
+
 async function loadBreedImages() {
   const selectedId = document.getElementById('breedSelect').value; // Get the selected option's value (ID)
   console.log("Id: ", selectedId);
@@ -139,13 +167,33 @@ document.getElementById('breedSelect').addEventListener('change', loadBreedImage
   favsView.style.display = 'none';
   votingView.style.display = 'block';
 
-  viewToggles.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      const viewClicked = item.dataset.view;
-      viewToggles.forEach(nav => nav.classList.remove('active'));
-      document.querySelectorAll(`[data-view="${viewClicked}"]`)
-        .forEach(nav => nav.classList.add('active'));
+  // viewToggles.forEach(item => {
+  //   item.addEventListener('click', (e) => {
+  //     e.preventDefault();
+  //     const viewClicked = item.dataset.view;
+  //     viewToggles.forEach(nav => nav.classList.remove('active'));
+  //     document.querySelectorAll(`[data-view="${viewClicked}"]`)
+  //       .forEach(nav => nav.classList.add('active'));
+  //     });
+  //   });
+    const favsGrid = document.querySelector(".favs-grid");
+
+    viewToggles.forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        const view = toggle.getAttribute("data-view");
+
+        // Remove 'active' class from all buttons
+        viewToggles.forEach((btn) => btn.classList.remove("active"));
+
+        // Add 'active' class to the clicked button
+        toggle.classList.add("active");
+
+        // Toggle the 'list-view' class on the favs-grid
+        if (view === "list") {
+          favsGrid.classList.add("list-view");
+        } else {
+          favsGrid.classList.remove("list-view");
+        }
       });
     });
   // Handle navigation
@@ -175,93 +223,110 @@ document.getElementById('breedSelect').addEventListener('change', loadBreedImage
         votingView.style.display = 'none';
         breedsView.style.display = 'none';
         favsView.style.display = 'block';
+        getFavourites()
       }
     });
   });
 
   // Function to fetch new cat image
-  async function fetchCatImage(name) {
-    try {
-      if (name !== "like") {
-        loading.style.display = "block";
-        catImagesDiv.style.display = "none";
-        
-        const response = await fetch("/");
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        const newImageURL = doc.querySelector("#cat-images img")?.src;
+let currentImageID = null; // To store the current image ID globally
 
-        if (newImageURL) {
-          const newImageElement = document.createElement("img");
-          newImageElement.src = newImageURL;
-          newImageElement.alt = "Cat image";
-          newImageElement.classList.add("pet-image");
+async function fetchCatImage(name) {
+  try {
+    if (name !== "like") {
+      console.log("Fetching new cat image...");
+      // Fetch a new image
+      loading.style.display = "block";
+      catImagesDiv.style.display = "none";
 
-          catImagesDiv.innerHTML = "";
-          catImagesDiv.appendChild(newImageElement);
-          catImagesDiv.style.display = "block";
-          loading.style.display = "none";
-        } else {
-          throw new Error("No image URL found");
-        }
-      } else{
-        loading.style.display = "block";
-        catImagesDiv.style.display = "none";
-        
-        const response = await fetch("/");
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
-        
-        // Assuming the Go controller sends the CatImageID and CatImageURL as part of the HTML
-        const newImageID = doc.querySelector("#cat-images img")?.id;
-        const newImageURL = doc.querySelector("#cat-images img")?.src;
-        
-        if (newImageID) {
-          // Log the ID and URL to the console
-          console.log("Cat Image ID:", newImageID);
-        
-          const newImageElement = document.createElement("img");
-          newImageElement.src = newImageURL;
-          newImageElement.alt = "Cat image";
-          newImageElement.classList.add("pet-image");
-        
-          catImagesDiv.innerHTML = "";
-          catImagesDiv.appendChild(newImageElement);
-          catImagesDiv.style.display = "block";
-          loading.style.display = "none";
-        
-          // Send the image ID to the Go backend to add to favourites
-          const rawBody = JSON.stringify({
-            image_id: newImageID, 
-            sub_id: "user-123"
-          });
-          
-          const newFavourite = await fetch("https://api.thecatapi.com/v1/favourites", {
-            method: 'POST',
-            headers: { 
-              'x-api-key': 'live_Ii20w7Wt785t9kCsxDQYAMTIIL7epsK1IaGiHL3hxWw0ou2AfkvZ3FAMxJ4NEc0Z', // Replace with your actual API key
-              'Content-Type': 'application/json' 
-            },
-            body: rawBody
-          });
-          
-          const result = await newFavourite.json();
-          console.log(result); // Handle the response as needed
-          
-        } else {
-          throw new Error("No image URL found");
-        }
-        
+      const response = await fetch("/");
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
 
+      const newImageURL = doc.querySelector("#cat-images img")?.src;
+      const newImageID = doc.querySelector("#cat-images img")?.id;
+
+      if (newImageURL && newImageID) {
+        // Store the current image details globally
+        currentImageID = newImageID;
+        currentImageURL = newImageURL;
+
+        const newImageElement = document.createElement("img");
+        newImageElement.src = newImageURL;
+        newImageElement.alt = "Cat image";
+        newImageElement.classList.add("pet-image");
+
+        catImagesDiv.innerHTML = "";
+        catImagesDiv.appendChild(newImageElement);
+        catImagesDiv.style.display = "block";
+        loading.style.display = "none";
+      } else {
+        throw new Error("No image URL or ID found");
       }
-      
-    } catch (error) {
-      console.error("Error fetching new cat image:", error);
-      loading.innerHTML = "<p>Error loading image. Please try again.</p>";
+    } else {
+      // Add the current image to favorites
+      if (currentImageID) {
+        console.log("Cat Image ID:", currentImageID);
+
+        const rawBody = JSON.stringify({
+          image_id: currentImageID, 
+          sub_id: "user-123",
+        });
+
+        const newFavourite = await fetch("https://api.thecatapi.com/v1/favourites", {
+          method: "POST",
+          headers: {
+            "x-api-key": "live_Ii20w7Wt785t9kCsxDQYAMTIIL7epsK1IaGiHL3hxWw0ou2AfkvZ3FAMxJ4NEc0Z", // Replace with your actual API key
+            "Content-Type": "application/json",
+          },
+          body: rawBody,
+        });
+
+        const result = await newFavourite.json();
+        console.log(result); // Handle the response as needed
+      } else {
+        console.error("No current image ID found to add to favorites.");
+      }
+      // Fetch a new image
+      loading.style.display = "block";
+      catImagesDiv.style.display = "none";
+
+      const response = await fetch("/");
+      const html = await response.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+
+      const newImageURL = doc.querySelector("#cat-images img")?.src;
+      const newImageID = doc.querySelector("#cat-images img")?.id;
+
+      if (newImageURL && newImageID) {
+        // Store the current image details globally
+        currentImageID = newImageID;
+        currentImageURL = newImageURL;
+
+        const newImageElement = document.createElement("img");
+        newImageElement.src = newImageURL;
+        newImageElement.alt = "Cat image";
+        newImageElement.classList.add("pet-image");
+
+        catImagesDiv.innerHTML = "";
+        catImagesDiv.appendChild(newImageElement);
+        catImagesDiv.style.display = "block";
+        loading.style.display = "none";
+      } else {
+        throw new Error("No image URL or ID found");
+      }
     }
+  } catch (error) {
+    console.error("Error fetching new cat image:", error);
+    loading.innerHTML = "<p>Error loading image. Please try again.</p>";
   }
+}
+
+window.onload = () => {
+  fetchCatImage("reload"); // Call the function without "like" to fetch a new image
+};
 
   // Handle voting buttons
   function handleVote(name) {
