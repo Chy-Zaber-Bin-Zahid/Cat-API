@@ -5,7 +5,6 @@ This repository contains a Golang application built with the Beego framework.
 ## Prerequisites
 - Go (version 1.16 or later)
 - Beego framework
-- MySQL database
 
 ## Installation
 1. Clone the repository:
@@ -23,11 +22,16 @@ cd W3-Assignemnt-Golang-Beego/catapi
 go mod tidy
 ```
 
-4. Configure database settings in `conf/app.conf`
+4. Configure settings in `conf/app.conf`
 
 ## Running the Application
 ```bash
-bee run
+go run main.go
+```
+
+## Run test
+```bash
+go test -v ./tests
 ```
 
 The application will start on `http://localhost:8080`
