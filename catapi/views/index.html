@@ -34,7 +34,7 @@
         <div class="loading-spinner"><img class="pulse" src="../static//img/loadingCat.svg" alt="Loading Cat"></div>
         {{if .CatImageURL}}
           <div id="cat-images">
-            <img src="{{.CatImageURL}}" alt="Cat image" class="pet-image">
+            <img id="{{.CatImageID}}" src="{{.CatImageURL}}" alt="Cat image" class="pet-image">
           </div>
         {{else}}
             <p>No image available.</p>

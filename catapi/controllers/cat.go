@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -20,7 +21,8 @@ type Breed struct {
 
 // Struct to parse the cat image data
 type CatImage struct {
-	URL string `json:"url"`
+	ID  string `json:"id"`
+    URL string `json:"url"`
 }
 
 type MainController struct {
@@ -28,100 +30,178 @@ type MainController struct {
 }
 
 func (c *MainController) Get() {
-	// Channel to get the breed and image data
-	breedChan := make(chan []Breed)
-	imageChan := make(chan string)
+    breedChan := make(chan []Breed)
+    imageChan := make(chan *CatImage) // Channel to send image data (ID and URL)
 
-	// Start a goroutine to fetch the breed data
-	go func() {
-		apiURL := "https://api.thecatapi.com/v1/breeds"
-		resp, err := http.Get(apiURL)
-		if err != nil {
-			// If there's an error with the HTTP request
-			fmt.Println("Error fetching breed data:", err)
-			breedChan <- nil
-			return
-		}
-		defer resp.Body.Close()
+    // Fetch breed data in a goroutine
+    go func() {
+        apiURL := "https://api.thecatapi.com/v1/breeds"
+        resp, err := http.Get(apiURL)
+        if err != nil {
+            fmt.Println("Error fetching breed data:", err)
+            breedChan <- nil
+            return
+        }
+        defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			// If there's an error reading the response body
-			fmt.Println("Error reading response body:", err)
-			breedChan <- nil
-			return
-		}
+        body, err := ioutil.ReadAll(resp.Body)
+        if err != nil {
+            fmt.Println("Error reading response body:", err)
+            breedChan <- nil
+            return
+        }
 
-		var breeds []Breed
-		err = json.Unmarshal(body, &breeds)
-		if err != nil {
-			// If the JSON parsing fails
-			fmt.Println("Error parsing JSON:", err)
-			breedChan <- nil
-			return
-		}
+        var breeds []Breed
+        err = json.Unmarshal(body, &breeds)
+        if err != nil {
+            fmt.Println("Error parsing JSON:", err)
+            breedChan <- nil
+            return
+        }
 
-		// Send the breed data to the channel
-		breedChan <- breeds
-	}()
+        breedChan <- breeds
+    }()
 
-	// Start a goroutine to fetch the cat image
-	go func() {
-		apiURL := "https://api.thecatapi.com/v1/images/search"
-		resp, err := http.Get(apiURL)
-		if err != nil {
-			// If there's an error with the HTTP request
-			fmt.Println("Error fetching cat image:", err)
-			imageChan <- ""
-			return
-		}
-		defer resp.Body.Close()
+    // Fetch cat image data (ID and URL) in a goroutine
+    go func() {
+        apiURL := "https://api.thecatapi.com/v1/images/search"
+        resp, err := http.Get(apiURL)
+        if err != nil {
+            fmt.Println("Error fetching cat image:", err)
+            imageChan <- nil
+            return
+        }
+        defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			// If there's an error reading the response body
-			fmt.Println("Error reading response body:", err)
-			imageChan <- ""
-			return
-		}
+        body, err := ioutil.ReadAll(resp.Body)
+        if err != nil {
+            fmt.Println("Error reading response body:", err)
+            imageChan <- nil
+            return
+        }
 
-		var catImages []CatImage
-		err = json.Unmarshal(body, &catImages)
-		if err != nil || len(catImages) == 0 {
-			// If the JSON parsing fails or the array is empty
-			fmt.Println("Error parsing JSON:", err)
-			imageChan <- ""
-			return
-		}
+        var catImages []CatImage
+        err = json.Unmarshal(body, &catImages)
+        if err != nil || len(catImages) == 0 {
+            fmt.Println("Error parsing JSON:", err)
+            imageChan <- nil
+            return
+        }
 
-		// Send the URL of the first image to the channel
-		imageChan <- catImages[0].URL
-	}()
+        imageData := &CatImage{
+            ID:  catImages[0].ID,
+            URL: catImages[0].URL,
+        }
 
-	// Fetch breed and image data from the channels
-	breeds := <-breedChan
-	catImageURL := <-imageChan
+        imageChan <- imageData
+    }()
 
-	if breeds == nil {
-		// If there's an error (i.e., the breed data is nil)
-		c.Data["Breeds"] = nil
-	} else {
-		// Otherwise, assign the breed data to the template data
-		c.Data["Breeds"] = breeds
-	}
+    // Get the breed and image data from the channels
+    breeds := <-breedChan
+    catImage := <-imageChan
 
-	// Handle the image URL
-	if catImageURL == "" {
-		// If the image URL is empty (i.e., an error occurred)
-		c.Data["CatImageURL"] = "Error fetching image"
-	} else {
-		// Otherwise, assign the image URL to the template data
-		c.Data["CatImageURL"] = catImageURL
-	}
+    // Send breed and image data to the template
+    if breeds == nil {
+        c.Data["Breeds"] = nil
+    } else {
+        c.Data["Breeds"] = breeds
+    }
 
-	// Render the HTML template with the image and breed data
-	c.TplName = "index.html"
+    if catImage == nil {
+        c.Data["CatImageID"] = "Error fetching image ID"
+        c.Data["CatImageURL"] = "Error fetching image URL"
+    } else {
+        c.Data["CatImageID"] = catImage.ID
+        c.Data["CatImageURL"] = catImage.URL
+    }
+
+    // Render the HTML template
+    c.TplName = "index.html"
 }
+
+type Favorite struct {
+    ImageID   string `json:"image_id"`
+}
+
+func (c *MainController) AddToFavourites() {
+    var favoriteReq struct {
+        ImageID string `json:"image_id"`
+        SubID   string `json:"sub_id"`
+    }
+
+    // Validate incoming request body
+    if err := json.Unmarshal(c.Ctx.Input.RequestBody, &favoriteReq); err != nil {
+        c.Ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
+        c.Data["json"] = map[string]string{"error": "Invalid request payload"}
+        c.ServeJSON()
+        return
+    }
+
+    // Proceed with the external API request to add to favorites
+    favChan := make(chan Favorite)
+    errChan := make(chan error)
+
+    go func() {
+        apiKey, err := beego.AppConfig.String("apiKey")
+        if err != nil || apiKey == "" {
+            errChan <- fmt.Errorf("API key is missing or invalid")
+            return
+        }
+
+        // Prepare the payload for the POST request
+        body, err := json.Marshal(map[string]string{
+            "image_id": favoriteReq.ImageID,
+            "sub_id":   favoriteReq.SubID,
+        })
+        if err != nil {
+            errChan <- err
+            return
+        }
+
+        req, err := http.NewRequest("POST", "https://api.thecatapi.com/v1/favourites", bytes.NewBuffer(body))
+        if err != nil {
+            errChan <- err
+            return
+        }
+
+        req.Header.Add("x-api-key", apiKey)
+        req.Header.Add("Content-Type", "application/json")
+
+        client := &http.Client{}
+        resp, err := client.Do(req)
+        if err != nil {
+            errChan <- err
+            return
+        }
+        defer resp.Body.Close()
+
+        if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+            errChan <- fmt.Errorf("failed to add to favourites: %s", resp.Status)
+            return
+        }
+
+        var favoriteResp Favorite
+        if err := json.NewDecoder(resp.Body).Decode(&favoriteResp); err != nil {
+            errChan <- err
+            return
+        }
+
+        favChan <- favoriteResp
+    }()
+
+    // Handle the response from the goroutine
+    select {
+    case favorite := <-favChan:
+        c.Data["json"] = favorite
+        c.ServeJSON()
+    case err := <-errChan:
+        c.Ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+        c.Data["json"] = map[string]string{"error": err.Error()}
+        c.ServeJSON()
+    }
+}
+
+
 
 func (c *MainController) FetchCatImages() {
 	// Retrieve breed_id from query parameters

@@ -8,7 +8,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const votingView = document.getElementById('voting-view');
   const breedsView = document.getElementById('breeds-view');
   const favsView = document.getElementById('favs-view');
+  const likeButton = document.querySelector('.like-btn');
   const viewToggles = document.querySelectorAll('.view-toggle');
+  const imageID = "your-image-id";
 
 //   document.addEventListener('DOMContentLoaded', function() {
 //     // Set the default breed ID (you can set this to whatever you want)
@@ -132,11 +134,6 @@ async function loadBreedImages() {
 
 // Add the event listener
 document.getElementById('breedSelect').addEventListener('change', loadBreedImages);
-
-
-
-
-
   // Initially hide breeds view
   breedsView.style.display = 'none';
   favsView.style.display = 'none';
@@ -183,30 +180,83 @@ document.getElementById('breedSelect').addEventListener('change', loadBreedImage
   });
 
   // Function to fetch new cat image
-  async function fetchCatImage() {
+  async function fetchCatImage(name) {
     try {
-      loading.style.display = "block";
-      catImagesDiv.style.display = "none";
-      
-      const response = await fetch("/");
-      const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, "text/html");
-      const newImageURL = doc.querySelector("#cat-images img")?.src;
+      if (name !== "like") {
+        loading.style.display = "block";
+        catImagesDiv.style.display = "none";
+        
+        const response = await fetch("/");
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const newImageURL = doc.querySelector("#cat-images img")?.src;
 
-      if (newImageURL) {
-        const newImageElement = document.createElement("img");
-        newImageElement.src = newImageURL;
-        newImageElement.alt = "Cat image";
-        newImageElement.classList.add("pet-image");
+        if (newImageURL) {
+          const newImageElement = document.createElement("img");
+          newImageElement.src = newImageURL;
+          newImageElement.alt = "Cat image";
+          newImageElement.classList.add("pet-image");
 
-        catImagesDiv.innerHTML = "";
-        catImagesDiv.appendChild(newImageElement);
-        catImagesDiv.style.display = "block";
-        loading.style.display = "none";
-      } else {
-        throw new Error("No image URL found");
+          catImagesDiv.innerHTML = "";
+          catImagesDiv.appendChild(newImageElement);
+          catImagesDiv.style.display = "block";
+          loading.style.display = "none";
+        } else {
+          throw new Error("No image URL found");
+        }
+      } else{
+        loading.style.display = "block";
+        catImagesDiv.style.display = "none";
+        
+        const response = await fetch("/");
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        
+        // Assuming the Go controller sends the CatImageID and CatImageURL as part of the HTML
+        const newImageID = doc.querySelector("#cat-images img")?.id;
+        const newImageURL = doc.querySelector("#cat-images img")?.src;
+        
+        if (newImageID) {
+          // Log the ID and URL to the console
+          console.log("Cat Image ID:", newImageID);
+        
+          const newImageElement = document.createElement("img");
+          newImageElement.src = newImageURL;
+          newImageElement.alt = "Cat image";
+          newImageElement.classList.add("pet-image");
+        
+          catImagesDiv.innerHTML = "";
+          catImagesDiv.appendChild(newImageElement);
+          catImagesDiv.style.display = "block";
+          loading.style.display = "none";
+        
+          // Send the image ID to the Go backend to add to favourites
+          const rawBody = JSON.stringify({
+            image_id: newImageID, 
+            sub_id: "user-123"
+          });
+          
+          const newFavourite = await fetch("https://api.thecatapi.com/v1/favourites", {
+            method: 'POST',
+            headers: { 
+              'x-api-key': 'live_Ii20w7Wt785t9kCsxDQYAMTIIL7epsK1IaGiHL3hxWw0ou2AfkvZ3FAMxJ4NEc0Z', // Replace with your actual API key
+              'Content-Type': 'application/json' 
+            },
+            body: rawBody
+          });
+          
+          const result = await newFavourite.json();
+          console.log(result); // Handle the response as needed
+          
+        } else {
+          throw new Error("No image URL found");
+        }
+        
+
       }
+      
     } catch (error) {
       console.error("Error fetching new cat image:", error);
       loading.innerHTML = "<p>Error loading image. Please try again.</p>";
@@ -214,10 +264,12 @@ document.getElementById('breedSelect').addEventListener('change', loadBreedImage
   }
 
   // Handle voting buttons
-  function handleVote() {
-    fetchCatImage();
+  function handleVote(name) {
+    fetchCatImage(name);
   }
 
-  upVoteBtn?.addEventListener("click", handleVote);
-  downVoteBtn?.addEventListener("click", handleVote);
+  upVoteBtn?.addEventListener("click", () => handleVote("up"));
+  downVoteBtn?.addEventListener("click", () => handleVote("down"));
+  likeButton?.addEventListener("click", () => handleVote("like"));
+  
 });
