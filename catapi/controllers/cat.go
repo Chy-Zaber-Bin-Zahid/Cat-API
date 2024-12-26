@@ -108,11 +108,6 @@ func (c *MainController) Get() {
 	} else {
 		// Otherwise, assign the breed data to the template data
 		c.Data["Breeds"] = breeds
-		c.Data["Name"] = breeds[0].ID
-		c.Data["Name"] = breeds[0].Name
-		c.Data["Desc"] = breeds[0].Desc
-		c.Data["Origin"] = breeds[0].Origin
-		c.Data["Wiki"] = breeds[0].Wiki
 	}
 
 	// Handle the image URL
@@ -136,54 +131,116 @@ func (c *MainController) FetchCatImages() {
 	}
 	fmt.Println("Id:", breedID)
 
-	// Create search URL with limit=8
-	url := fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=8", breedID)
-
-	// Create the HTTP request
-	req, err := http.NewRequest("GET", url, nil)
+	// Fetch images from the first API
+	firstAPIURL := fmt.Sprintf("https://api.thecatapi.com/v1/images/search?breed_ids=%s&limit=8", breedID)
+	images, err := fetchImages(firstAPIURL)
 	if err != nil {
 		c.Data["json"] = map[string]interface{}{"error": err.Error()}
 		c.ServeJSON()
 		return
+	}
+
+	// Fetch breed information from the second API
+	secondAPIURL := fmt.Sprintf("https://api.thecatapi.com/v1/breeds/%s", breedID)
+	breedInfo, err := fetchBreedInfo(secondAPIURL)
+	if err != nil {
+		c.Data["json"] = map[string]interface{}{"error": err.Error()}
+		c.ServeJSON()
+		return
+	}
+
+	// Combine results into a single response
+	response := map[string]interface{}{
+		"images":    images,
+		"breedInfo": breedInfo,
+	}
+
+	// Return the combined response as JSON
+	c.Data["json"] = response
+	c.ServeJSON()
+}
+
+// fetchImages fetches images from the API and parses the JSON response
+func fetchImages(url string) ([]struct {
+	URL string `json:"url"`
+}, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		c.Data["json"] = map[string]interface{}{"error": err.Error()}
-		c.ServeJSON()
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
-	// Read the response body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		c.Data["json"] = map[string]interface{}{"error": err.Error()}
-		c.ServeJSON()
-		return
+		return nil, err
 	}
 
-	// Define a struct for parsing the image data
 	var images []struct {
 		URL string `json:"url"`
 	}
-
-	// Unmarshal the JSON response into the images struct
 	err = json.Unmarshal(body, &images)
 	if err != nil {
-		c.Data["json"] = map[string]interface{}{"error": err.Error()}
-		c.ServeJSON()
-		return
+		return nil, err
 	}
 
-	// Return the images as JSON response
-	if len(images) > 0 {
-		c.Data["json"] = images
-	} else {
-		c.Data["json"] = map[string]interface{}{
-			"error": "No images found for the selected breed",
-		}
+	return images, nil
+}
+
+// fetchBreedInfo fetches breed-specific information from the API and parses the JSON response
+func fetchBreedInfo(url string) (struct {
+	Name        string `json:"name"`
+	Origin      string `json:"origin"`
+	Description string `json:"description"`
+	WikipediaURL string `json:"wikipedia_url"`
+}, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return struct {
+			Name        string `json:"name"`
+			Origin      string `json:"origin"`
+			Description string `json:"description"`
+			WikipediaURL string `json:"wikipedia_url"`
+		}{}, err
 	}
-	c.ServeJSON()
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return struct {
+			Name        string `json:"name"`
+			Origin      string `json:"origin"`
+			Description string `json:"description"`
+			WikipediaURL string `json:"wikipedia_url"`
+		}{}, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return struct {
+			Name        string `json:"name"`
+			Origin      string `json:"origin"`
+			Description string `json:"description"`
+			WikipediaURL string `json:"wikipedia_url"`
+		}{}, err
+	}
+
+	var breedInfo struct {
+		Name        string `json:"name"`
+		Origin      string `json:"origin"`
+		Description string `json:"description"`
+		WikipediaURL string `json:"wikipedia_url"`
+	}
+	err = json.Unmarshal(body, &breedInfo)
+	if err != nil {
+		return breedInfo, err
+	}
+
+	return breedInfo, nil
 }

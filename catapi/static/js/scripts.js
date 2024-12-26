@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
 async function loadBreedImages() {
   const selectedId = document.getElementById('breedSelect').value; // Get the selected option's value (ID)
   console.log("Id: ", selectedId);
-
+// Show loading spinner
   try {
       const response = await fetch(`/catImages?breed_id=${selectedId}`, {
           method: 'GET',
@@ -36,7 +36,10 @@ async function loadBreedImages() {
           throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      const images = await response.json();
+      const data = await response.json();
+
+      // Extract images and breed info
+      const { images, breedInfo } = data;
 
       // Get the carousel container
       const carouselContainer = document.querySelector('.carousel-slide');
@@ -48,64 +51,81 @@ async function loadBreedImages() {
       images.forEach((image, index) => {
           const imgElement = document.createElement('img');
           const dotElement = document.createElement('div');
-          
+
           // Set image attributes
           imgElement.src = image.url;
           imgElement.alt = `Slide ${count + 1}`;
           imgElement.className = "carousel-image"; // Optional: for styling purposes
-          
+
           // Set dot class
           dotElement.className = "dot";
-          
+
           // Append the image to the carousel container
           carouselContainer.appendChild(imgElement);
-          
+
           // Select the carousel-dots element
           const carouselDots = document.querySelector('.carousel-dots');
-          
+
           // Remove all existing child elements from carousel-dots only once
           if (count === 0) {
               while (carouselDots.firstChild) {
                   carouselDots.removeChild(carouselDots.firstChild);
               }
           }
-          
+
           // Add the 'active' class to the first dot
           if (count === 0) dotElement.classList.add('active'); // Make the first dot active
           dotElement.dataset.index = index;
-          
+
           // Append the dot to the carousel-dots element
           carouselDots.appendChild(dotElement);
-          
+
           count++;
       });
-      
+
       // Handle dot clicks
       const dots = document.querySelectorAll('.dot');
-      
+
       dots.forEach(dot => {
           dot.addEventListener('click', () => {
               // Get the index of the clicked dot
               const index = parseInt(dot.dataset.index);
-      
+
               // Update active dot
               dots.forEach(d => d.classList.remove('active'));
               dot.classList.add('active');
-      
+
               // Optional: Scroll the corresponding image into view (if necessary)
               // Example: if you're using CSS for horizontal scrolling
               const imageWidth = carouselContainer.querySelector('.carousel-image').clientWidth;
               carouselContainer.style.transform = `translateX(-${index * imageWidth}px)`;
           });
       });
-      
-      
 
-      console.log("Images loaded successfully!");
+      // Update breed details
+      const breedName = document.getElementById('breedName');
+      const breedOrigin = document.getElementById('breedOrigin');
+      const breedDesc = document.getElementById('breedDesc');
+      const wikiLink = document.getElementById('wikiLink');
+
+      // Clear and set the name and origin properly
+      breedName.textContent = breedInfo.name;
+      breedOrigin.textContent = ` (${breedInfo.origin})`;
+      breedName.appendChild(breedOrigin); // Ensure the span is inside the heading
+
+      // Update the description
+      breedDesc.textContent = breedInfo.description;
+
+      // Update the Wikipedia link
+      wikiLink.href = breedInfo.wikipedia_url;
+      wikiLink.textContent = "Learn More on Wikipedia";
+
+      console.log("Images and breed info loaded successfully!");
   } catch (error) {
       console.error('Error fetching data:', error);
   }
 }
+
 
 // Add the event listener
 document.getElementById('breedSelect').addEventListener('change', loadBreedImages);

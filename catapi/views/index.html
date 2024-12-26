@@ -84,6 +84,7 @@
           Favs
         </a>
       </nav>
+      <div class="loading-spinner"><img class="pulse" src="../static//img/loadingCat.svg" alt="Loading Cat"></div>
       <div class="breeds-content">
         <!-- Dropdown for selecting breed -->
         <select class="breed-select" id="breedSelect">
@@ -104,9 +105,9 @@
     
             <div class="breed-details">
                 <!-- Display details of the selected breed -->
-                <h2 id="breedName">{{.Name}} <span id="breedOrigin">({{.Origin}})</span></h2>
-                <p id="breedDesc">{{.Desc}}</p>
-                <a href="{{.Wiki}}" class="wiki-link" id="wikiLink">WIKIPEDIA</a>
+                <h2 id="breedName"> <span id="breedOrigin"></span></h2>
+                <p id="breedDesc"></p>
+                <a href="" class="wiki-link" target="_blank" id="wikiLink">Loading...</a>
             </div>
         </div>
       </div>
