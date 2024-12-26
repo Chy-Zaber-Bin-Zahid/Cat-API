@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
 async function loadBreedImages() {
   const selectedId = document.getElementById('breedSelect').value; // Get the selected option's value (ID)
   console.log("Id: ", selectedId);
-// Show loading spinner
+
   try {
       const response = await fetch(`/catImages?breed_id=${selectedId}`, {
           method: 'GET',
@@ -44,6 +44,9 @@ async function loadBreedImages() {
       // Get the carousel container
       const carouselContainer = document.querySelector('.carousel-slide');
       carouselContainer.innerHTML = ''; // Clear existing content
+
+      // Reset the slide view to the first image
+      carouselContainer.style.transform = 'translateX(0px)';
 
       // Loop through the images and add them to the carousel
       let count = 0;
@@ -95,8 +98,7 @@ async function loadBreedImages() {
               dots.forEach(d => d.classList.remove('active'));
               dot.classList.add('active');
 
-              // Optional: Scroll the corresponding image into view (if necessary)
-              // Example: if you're using CSS for horizontal scrolling
+              // Scroll the corresponding image into view
               const imageWidth = carouselContainer.querySelector('.carousel-image').clientWidth;
               carouselContainer.style.transform = `translateX(-${index * imageWidth}px)`;
           });
@@ -125,6 +127,7 @@ async function loadBreedImages() {
       console.error('Error fetching data:', error);
   }
 }
+
 
 
 // Add the event listener
