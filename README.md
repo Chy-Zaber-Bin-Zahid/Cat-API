@@ -1,4 +1,4 @@
-# W3-Assignemnt-Golang-Beego
+# Cat API
 ## Description
 This repository contains a Golang application built with the Beego framework.
 
